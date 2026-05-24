@@ -828,7 +828,7 @@ function makeSongRow(song, list, playlistId) {
       ${playing?`<div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;border-radius:8px"><div class="playing-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>`:''}
     </div>
     <div class="row-info"><div class="row-title">${song.title}</div><div class="row-sub">${song.artist}</div></div>
-    <button class="row-more" onclick="event.stopPropagation();showSongSheet(this)" data-song='${JSON.stringify(song).replace(/'/g,"\\'")}' data-plid="${playlistId||''}" data-list='${JSON.stringify(list).replace(/'/g,"\\'")}'>
+    <button class="row-more" onclick="event.stopPropagation();showSongSheet(this)" data-song="${btoa(unescape(encodeURIComponent(JSON.stringify(song))))}" data-plid="${playlistId||''}" data-list="${btoa(unescape(encodeURIComponent(JSON.stringify(list))))}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
     </button>
   `;
@@ -837,9 +837,9 @@ function makeSongRow(song, list, playlistId) {
 }
 
 window.showSongSheet = (btn) => {
-  const song=JSON.parse(btn.dataset.song);
+  const song=JSON.parse(decodeURIComponent(escape(atob(btn.dataset.song))));
   const plId=btn.dataset.plid||null;
-  const list=JSON.parse(btn.dataset.list);
+  const list=JSON.parse(decodeURIComponent(escape(atob(btn.dataset.list))));
   openSongSheet(song, plId, list);
 };
 
