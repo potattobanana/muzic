@@ -425,15 +425,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDpiqiXAp4KU8UcaHAfeBYsmLdAFSTJDzU",
-  authDomain: "muzic-ccef0.firebaseapp.com",
-  projectId: "muzic-ccef0",
-  storageBucket: "muzic-ccef0.firebasestorage.app",
-  messagingSenderId: "166318258095",
-  appId: "1:166318258095:web:1118a87d495a28820d615a",
-  measurementId: "G-N6PZMHCQZG"
+  apiKey: "a",
+  authDomain: "b",
+  projectId: "c",
+  storageBucket: "d",
+  messagingSenderId: "e",
+  appId: "f"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -547,10 +545,11 @@ async function saveLiked() {
 async function savePlaylist(pl) {
   if (!currentUser) return;
   const { id, ...data } = pl;
-  if (id && id.length > 10) {
-    // Firestore ID
+  if (id) {
+    // Existing playlist — update it
     await setDoc(doc(db, 'playlists', id), { ...data, uid: currentUser.uid });
   } else {
+    // New playlist — create it and store the generated ID back
     const ref = await addDoc(collection(db, 'playlists'), { ...data, uid: currentUser.uid, createdAt: serverTimestamp() });
     pl.id = ref.id;
   }
@@ -861,7 +860,21 @@ window.openSongSheet = (song, playlistId, list) => {
   openSheet('song-sheet');
 };
 
-window.addSongToPlaylist = async (song, plId) => { const pl=playlists.find(p=>p.id===plId);if(!pl)return;if(!pl.songs.find(s=>s.id===song.id)){pl.songs.push({...song});await savePlaylist(pl);renderLibrary();} };
+window.addSongToPlaylist = async (song, plId) => {
+  const pl = playlists.find(p => p.id === plId);
+  if (!pl) return;
+  if (!pl.songs.find(s => s.id === song.id)) {
+    pl.songs.push({...song});
+    await savePlaylist(pl);
+    renderLibrary();
+    if (currentPlaylistId === plId) renderPlaylist(plId);
+    const toast = document.createElement("div");
+    toast.style.cssText = "position:fixed;bottom:140px;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);padding:10px 20px;border-radius:100px;font-size:13px;font-weight:500;z-index:999;border:1px solid var(--border2);white-space:nowrap";
+    toast.textContent = "Added to " + pl.name;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+};
 window.removeSongFromPlaylist = async (song, plId) => { const pl=playlists.find(p=>p.id===plId);if(!pl)return;pl.songs=pl.songs.filter(s=>s.id!==song.id);await savePlaylist(pl);renderPlaylist(plId); };
 window.refreshCurrentView = () => { const cur=screenStack[screenStack.length-1]; if(cur==='home')renderHome();if(cur==='liked')renderLiked();if(cur==='playlist')renderPlaylist(currentPlaylistId);if(cur==='np')updateLikeBtn(); };
 
