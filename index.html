@@ -454,7 +454,7 @@ let isPlaying = false, shuffleOn = false, repeatState = 0, vol = 0.8;
 let ytPlayer = null, ytReady = false;
 let progressTimer = null, searchTimer = null;
 let screenStack = ['home'];
-let currentPlaylistId = null;
+let currentPlaylistId = null; window.currentPlaylistId = null;
 let selectedEmoji = '🎵';
 let lastResults = [];
 let contextSong = null;
@@ -583,7 +583,7 @@ async function loadSharedPlaylist(plId) {
 }
 
 function showSharedPlaylist(pl) {
-  currentPlaylistId = pl.id;
+  currentPlaylistId = pl.id; window.currentPlaylistId = pl.id;
   screenStack = ['home', 'playlist'];
   showScreen('playlist');
   document.getElementById('pl-screen-title').textContent = pl.name;
@@ -747,7 +747,7 @@ window.switchTab = (tab) => {
 
 window.openNowPlaying = () => { screenStack.push('np'); showScreen('np'); updateNowPlaying(); };
 
-window.openPlaylist = (id) => { currentPlaylistId=id; screenStack.push('playlist'); showScreen('playlist'); renderPlaylist(id); };
+window.openPlaylist = (id) => { currentPlaylistId=id; window.currentPlaylistId=id; screenStack.push('playlist'); showScreen('playlist'); renderPlaylist(id); };
 
 window.goBack = () => {
   screenStack.pop();
