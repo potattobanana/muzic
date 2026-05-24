@@ -446,9 +446,10 @@ const provider = new GoogleAuthProvider();
 // ════════════════════════════════════════
 let currentUser = null;
 let apiKey = localStorage.getItem('muzic_api') || '';
-let playlists = [];
-let liked = [];
+let playlists = []; window.playlists = playlists;
+let liked = []; window.liked = liked;
 let queue = [], qIdx = -1, currentSong = null;
+window.queue = queue;
 let isPlaying = false, shuffleOn = false, repeatState = 0, vol = 0.8;
 let ytPlayer = null, ytReady = false;
 let progressTimer = null, searchTimer = null;
@@ -457,6 +458,7 @@ let currentPlaylistId = null;
 let selectedEmoji = '🎵';
 let lastResults = [];
 let contextSong = null;
+window.contextSong = null;
 let shareLink = '';
 
 const DEMO = [
@@ -529,14 +531,15 @@ async function loadUserData() {
   // Load liked
   try {
     const likedDoc = await getDoc(doc(db, 'users', uid, 'data', 'liked'));
-    liked = likedDoc.exists() ? (likedDoc.data().songs || []) : [];
-  } catch(e) { liked = []; }
-  // Load playlists
+    const likedData = likedDoc.exists() ? (likedDoc.data().songs || []) : [];
+    liked.length = 0; likedData.forEach(s => liked.push(s));
+  } catch(e) { liked.length = 0; }
   try {
     const q = query(collection(db, 'playlists'), where('uid', '==', uid));
     const snap = await getDocs(q);
-    playlists = snap.docs.map(d => ({...d.data(), id: d.id}));
-  } catch(e) { playlists = []; }
+    const plData = snap.docs.map(d => ({...d.data(), id: d.id}));
+    playlists.length = 0; plData.forEach(p => playlists.push(p));
+  } catch(e) { playlists.length = 0; }
 }
 
 async function saveLiked() {
@@ -847,7 +850,7 @@ window.showSongSheet = (btn) => {
 // SONG SHEET
 // ════════════════════════════════════════
 window.openSongSheet = (song, playlistId, list) => {
-  contextSong=song;
+  contextSong=song; window.contextSong=song;
   const isLiked=liked.some(s=>s.id===song.id);
   document.getElementById('song-sheet-title').textContent=song.title;
   let html=`
