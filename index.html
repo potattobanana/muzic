@@ -546,6 +546,14 @@ window.doSignOut = async () => { await signOut(auth); closeSheet('user-sheet'); 
 async function loadUserData() {
   if (!currentUser) return;
   const uid = currentUser.uid;
+  // Load API key from Firestore
+  try {
+    const settingsDoc = await getDoc(doc(db, 'users', uid, 'data', 'settings'));
+    if (settingsDoc.exists() && settingsDoc.data().apiKey) {
+      apiKey = settingsDoc.data().apiKey;
+      localStorage.setItem('muzic_api', apiKey);
+    }
+  } catch(e) {}
   // Load liked
   try {
     const likedDoc = await getDoc(doc(db, 'users', uid, 'data', 'liked'));
@@ -724,27 +732,15 @@ window.playPrev = () => {
 
 window.toggleShuffle = () => { shuffleOn=!shuffleOn; document.getElementById('nc-shuffle').classList.toggle('active',shuffleOn); };
 window.toggleRepeat = () => {
-  repeatState = (repeatState+1)%3; window.repeatState = repeatState;
+  repeatState = repeatState === 0 ? 1 : 0;
+  window.repeatState = repeatState;
   const btn = document.getElementById('nc-repeat');
-  btn.classList.toggle('active', repeatState>0);
-  // Show toast so user knows the state
-  const labels = ['Repeat off', 'Repeat all 🔁', 'Repeat one 🔂'];
+  btn.classList.toggle('active', repeatState === 1);
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:160px;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);padding:10px 20px;border-radius:100px;font-size:13px;font-weight:500;z-index:999;border:1px solid var(--border2);white-space:nowrap';
-  toast.textContent = labels[repeatState];
+  toast.textContent = repeatState === 1 ? 'Looping current song 🔂' : 'Loop off';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 1500);
-  // Show "1" badge on button when repeat one
-  btn.style.position = 'relative';
-  const old = btn.querySelector('.repeat-badge');
-  if (old) old.remove();
-  if (repeatState === 2) {
-    const badge = document.createElement('div');
-    badge.className = 'repeat-badge';
-    badge.style.cssText = 'position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:var(--accent);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;';
-    badge.textContent = '1';
-    btn.appendChild(badge);
-  }
 };
 window.seekTo = (e) => { if(!currentSong||!ytPlayer) return; const r=e.currentTarget.getBoundingClientRect(); ytPlayer.seekTo(((e.clientX-r.left)/r.width)*(ytPlayer.getDuration()||0),true); };
 
@@ -1015,7 +1011,15 @@ window.openSheet = (id) => document.getElementById(id).classList.add('open');
 window.closeSheet = (id) => document.getElementById(id).classList.remove('open');
 window.openApiModal = () => { document.getElementById('api-input').value=apiKey; document.getElementById('api-modal').classList.add('open'); };
 window.closeApiModal = (e) => { if(!e||e.target===document.getElementById('api-modal')) document.getElementById('api-modal').classList.remove('open'); };
-window.saveApiKey = () => { apiKey=document.getElementById('api-input').value.trim(); localStorage.setItem('muzic_api',apiKey); closeApiModal(); };
+window.saveApiKey = async () => {
+  apiKey = document.getElementById('api-input').value.trim();
+  localStorage.setItem('muzic_api', apiKey);
+  // Sync to Firestore so it works on all devices
+  if (currentUser) {
+    await setDoc(doc(db, 'users', currentUser.uid, 'data', 'settings'), { apiKey });
+  }
+  closeApiModal();
+};
 window.openShareModal = openShareModal;
 
 window.openCreatePlaylist = () => {
