@@ -440,13 +440,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "a",
-  authDomain: "b",
-  projectId: "c",
-  storageBucket: "d",
-  messagingSenderId: "e",
-  appId: "f"
+  apiKey: "AIzaSyDpiqiXAp4KU8UcaHAfeBYsmLdAFSTJDzU",
+  authDomain: "muzic-ccef0.firebaseapp.com",
+  projectId: "muzic-ccef0",
+  storageBucket: "muzic-ccef0.firebasestorage.app",
+  messagingSenderId: "166318258095",
+  appId: "1:166318258095:web:1118a87d495a28820d615a",
+  measurementId: "G-N6PZMHCQZG"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -688,7 +690,7 @@ window.closeShareModal = (e) => { if(!e||e.target===document.getElementById('sha
 // ════════════════════════════════════════
 
 // !! REPLACE THIS WITH YOUR RENDER URL AFTER DEPLOYING !!
-const BACKEND_URL = 'https://YOUR-BACKEND.onrender.com';
+const BACKEND_URL = 'https://muzic-backend-ljos.onrender.com';
 
 const audio = document.getElementById('audio-player');
 ytReady = true; // always ready
