@@ -410,13 +410,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDwhRxjd-Mng-RlVP3cvM_eVEEwxju8xqc",
-  authDomain: "muzic-c853d.firebaseapp.com",
-  projectId: "muzic-c853d",
-  storageBucket: "muzic-c853d.firebasestorage.app",
-  messagingSenderId: "757088160360",
-  appId: "1:757088160360:web:4c38bb034740329603c9dd"
-};;
+  apiKey: "a",
+  authDomain: "b",
+  projectId: "c",
+  storageBucket: "d",
+  messagingSenderId: "e",
+  appId: "f"
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -685,8 +685,14 @@ window.togglePlay=()=>{if(!currentSong)return;isPlaying?ytPlayer.pauseVideo():yt
 
 window.playNext=()=>{
   if(!queue.length) return;
-  if(shuffleOn) qIdx=Math.floor(Math.random()*queue.length);
-  else qIdx=Math.min(qIdx+1,queue.length-1);
+  if(shuffleOn) {
+    let newIdx;
+    if(queue.length===1) newIdx=0;
+    else { do { newIdx=Math.floor(Math.random()*queue.length); } while(newIdx===qIdx); }
+    qIdx=newIdx;
+  } else {
+    qIdx=Math.min(qIdx+1,queue.length-1);
+  }
   if(queue[qIdx]) window.playSong(queue[qIdx],null);
 };
 
@@ -776,14 +782,14 @@ function updatePlayIcons(){
 }
 function updatePlayerBar(){
   if(!currentSong)return;
-  document.getElementById('pb-title').textContent=currentSong.title;
-  document.getElementById('pb-artist').textContent=currentSong.artist;
+  document.getElementById('pb-title').textContent=decodeHTML(currentSong.title||'');
+  document.getElementById('pb-artist').textContent=decodeHTML(currentSong.artist||'');
   document.getElementById('pb-thumb').innerHTML=currentSong.thumb?`<img src="${currentSong.thumb}" alt="">`:'<div class="pb-thumb-ph">🎵</div>';
 }
 function updateNowPlaying(){
   if(!currentSong)return;
-  document.getElementById('np-title').textContent=currentSong.title;
-  document.getElementById('np-artist').textContent=currentSong.artist;
+  document.getElementById('np-title').textContent=decodeHTML(currentSong.title||'');
+  document.getElementById('np-artist').textContent=decodeHTML(currentSong.artist||'');
   document.getElementById('np-art').innerHTML=currentSong.thumb?`<img src="${currentSong.thumb}" alt="">`:'<div class="np-art-ph">🎵</div>';
   updateLikeBtn();
 }
@@ -906,8 +912,13 @@ function renderPlaylist(id){
 }
 
 window.shufflePlay=(songs)=>{
-  if(!songs.length)return;
-  const sh=[...songs].sort(()=>Math.random()-.5);
+  if(!songs.length) return;
+  // Fisher-Yates shuffle
+  const sh=[...songs];
+  for(let i=sh.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [sh[i],sh[j]]=[sh[j],sh[i]];
+  }
   shuffleOn=true; document.getElementById('nc-shuffle').classList.add('active');
   window.playSong(sh[0],sh);
 };
@@ -919,12 +930,14 @@ function makeSongRow(song,list,playlistId){
   const div=document.createElement('div');
   const playing=currentSong&&currentSong.id===song.id;
   div.className='song-row'+(playing?' playing':'');
+  const songTitle = decodeHTML(song.title||'');
+  const songArtist = decodeHTML(song.artist||'');
   div.innerHTML=`
     <div class="row-thumb">
       ${song.thumb?`<img src="${song.thumb}" alt="" loading="lazy">`:'<div class="row-thumb-ph">♪</div>'}
       ${playing?`<div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;border-radius:8px"><div class="playing-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>`:''}
     </div>
-    <div class="row-info"><div class="row-title">${song.title}</div><div class="row-sub">${song.artist}</div></div>
+    <div class="row-info"><div class="row-title">${songTitle}</div><div class="row-sub">${songArtist}</div></div>
     <button class="row-more" onclick="event.stopPropagation();showSongSheet(this)"
       data-song="${btoa(unescape(encodeURIComponent(JSON.stringify(song))))}"
       data-plid="${playlistId||''}"
